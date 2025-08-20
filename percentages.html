@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Percentages Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 2em;
+    }
+
+    .quiz-container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      border-radius: 12px;
+    }
+
+    .question, .score, .timer {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    .options label {
+      display: block;
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #fafafa;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .options label:hover {
+      background-color: #e0e0e0;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      background-color: #333;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    button:hover {
+      background-color: #555;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .summary-table th, .summary-table td {
+      padding: 8px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+
+<header>Percentages - Quiz</header>
+
+<div class="quiz-container">
+
+  <div id="start-section">
+    <p class="question">How many questions would you like to attempt?</p>
+    <div class="options">
+      <button onclick="chooseCount(10)">10</button>
+      <button onclick="chooseCount(20)">20</button>
+      <button onclick="chooseCount(30)">30</button>
+      <button onclick="chooseCount(50)">50</button>
+    </div>
+  </div>
+
+  <div id="timer-section" class="hidden">
+    <p class="question">Select quiz duration:</p>
+    <div class="options">
+      <button onclick="startQuiz(3)">3 minutes</button>
+      <button onclick="startQuiz(5)">5 minutes</button>
+      <button onclick="startQuiz(10)">10 minutes</button>
+    </div>
+  </div>
+
+  <div id="quiz-section" class="hidden">
+    <div class="timer" id="timer">Timer: --:--</div>
+    <div id="question" class="question"></div>
+    <div class="options" id="options"></div>
+    <div class="controls">
+      <button onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+
+  <div id="result-section" class="hidden">
+    <div class="score" id="score"></div>
+    <h3>Summary:</h3>
+    <table class="summary-table" id="summary-table">
+      <thead>
+        <tr>
+          <th>Q.No</th>
+          <th>Question</th>
+          <th>Your Answer</th>
+          <th>Correct Answer</th>
+          <th>Result</th>
+          <th>Time Taken (s)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="location.reload()">Play Again</button>
+  </div>
+
+</div>
+
+<script>
+  // Sample placeholder for percentage questions
+  const moreQuestions = [
+  {
+    question: "What is 10% of 250?",
+    options: ["25", "20", "30", "15"],
+    answer: "25"
+  },
+  {
+    question: "What percent of 200 is 50?",
+    options: ["20%", "25%", "30%", "35%"],
+    answer: "25%"
+  },
+  {
+    question: "If a book is priced at $120 and is discounted by 15%, what is the discount?",
+    options: ["$16", "$18", "$20", "$24"],
+    answer: "$18"
+  },
+  {
+    question: "What is 75% of 80?",
+    options: ["60", "65", "70", "55"],
+    answer: "60"
+  },
+  {
+    question: "If a value increases from 100 to 125, what is the percentage increase?",
+    options: ["20%", "25%", "30%", "15%"],
+    answer: "25%"
+  },
+  {
+    question: "What is 5% of 600?",
+    options: ["30", "25", "20", "35"],
+    answer: "30"
+  },
+  {
+    question: "If a quantity is reduced from 500 to 400, what is the percentage decrease?",
+    options: ["15%", "20%", "25%", "30%"],
+    answer: "20%"
+  },
+  {
+    question: "What is 12.5% of 160?",
+    options: ["20", "25", "15", "30"],
+    answer: "20"
+  },
+  {
+    question: "If 80 is 40% of a number, what is the number?",
+    options: ["180", "160", "200", "220"],
+    answer: "200"
+  },
+  {
+    question: "If a product costs $150 after a 25% discount, what was the original price?",
+    options: ["$180", "$190", "$200", "$210"],
+    answer: "$200"
+  },
+  {
+    question: "What is 250% of 40?",
+    options: ["100", "120", "90", "110"],
+    answer: "100"
+  },
+  {
+    question: "What is 1% of 900?",
+    options: ["8", "9", "10", "11"],
+    answer: "9"
+  },
+  {
+    question: "If the price of a pen increased from $20 to $25, what is the percent increase?",
+    options: ["20%", "22%", "25%", "30%"],
+    answer: "25%"
+  },
+  {
+    question: "What percent of 90 is 45?",
+    options: ["40%", "50%", "60%", "70%"],
+    answer: "50%"
+  },
+  {
+    question: "A number is 30% more than 100. What is the number?",
+    options: ["120", "130", "140", "150"],
+    answer: "130"
+  },
+  {
+    question: "What is 80% of 250?",
+    options: ["180", "190", "200", "210"],
+    answer: "200"
+  },
+  {
+    question: "What is the percentage of 75 out of 300?",
+    options: ["10%", "20%", "25%", "30%"],
+    answer: "25%"
+  },
+  {
+    question: "What is 0.5% of 600?",
+    options: ["3", "2", "4", "5"],
+    answer: "3"
+  },
+  {
+    question: "60 is what percent of 240?",
+    options: ["15%", "20%", "25%", "30%"],
+    answer: "25%"
+  },
+  {
+    question: "If a number is increased by 20% and becomes 120, what was the original number?",
+    options: ["100", "110", "90", "105"],
+    answer: "100"
+  },
+  {
+    question: "What is 66 2/3% of 90?",
+    options: ["60", "55", "65", "70"],
+    answer: "60"
+  },
+  {
+    question: "What is 33 1/3% of 150?",
+    options: ["45", "50", "55", "60"],
+    answer: "50"
+  },
+  {
+    question: "If 15 is 60% of a number, what is the number?",
+    options: ["20", "25", "30", "35"],
+    answer: "25"
+  },
+  {
+    question: "What percent is 18 out of 120?",
+    options: ["12%", "15%", "18%", "20%"],
+    answer: "15%"
+  },
+  {
+    question: "What is 0.25% of 400?",
+    options: ["0.8", "1", "1.2", "1.5"],
+    answer: "1"
+  },
+  {
+    question: "What percent of 80 is 64?",
+    options: ["70%", "75%", "80%", "85%"],
+    answer: "80%"
+  },
+  {
+    question: "If a value becomes 80% of its original, what is the percentage decrease?",
+    options: ["10%", "15%", "20%", "25%"],
+    answer: "20%"
+  },
+  {
+    question: "What is 120% of 50?",
+    options: ["50", "55", "60", "65"],
+    answer: "60"
+  },
+  {
+    question: "If a number is 150% of 80, what is the number?",
+    options: ["120", "100", "130", "140"],
+    answer: "120"
+  },
+  {
+    question: "If 25% of a number is 45, what is the number?",
+    options: ["160", "170", "180", "190"],
+    answer: "180"
+  },
+  {
+    question: "What is 37.5% of 64?",
+    options: ["24", "20", "22", "18"],
+    answer: "24"
+  },
+  {
+    question: "If 90 is increased by 33.33%, what is the result?",
+    options: ["115", "120", "125", "130"],
+    answer: "120"
+  },
+  {
+    question: "What percent of 250 is 75?",
+    options: ["25%", "30%", "35%", "40%"],
+    answer: "30%"
+  },
+  {
+    question: "What is 7% of 700?",
+    options: ["49", "48", "47", "50"],
+    answer: "49"
+  },
+  {
+    question: "A price increases from 240 to 300. What is the percent increase?",
+    options: ["20%", "25%", "30%", "35%"],
+    answer: "25%"
+  },
+  {
+    question: "If 10% of a number is 18, what is the number?",
+    options: ["180", "160", "150", "170"],
+    answer: "180"
+  },
+  {
+    question: "What is 85% of 200?",
+    options: ["160", "170", "180", "190"],
+    answer: "170"
+  },
+  {
+    question: "What is 2% of 450?",
+    options: ["9", "10", "11", "12"],
+    answer: "9"
+  },
+  {
+    question: "If the price drops from $600 to $450, what is the percent decrease?",
+    options: ["20%", "25%", "30%", "35%"],
+    answer: "25%"
+  },
+  {
+    question: "What is 150% of 60?",
+    options: ["80", "85", "90", "95"],
+    answer: "90"
+  },
+  {
+    question: "If 72 is 60% of a number, what is the number?",
+    options: ["110", "115", "120", "125"],
+    answer: "120"
+  },
+  {
+    question: "What is 11% of 550?",
+    options: ["60", "61", "62", "63"],
+    answer: "60.5"
+  },
+  {
+    question: "What percent is 36 of 240?",
+    options: ["10%", "12%", "15%", "18%"],
+    answer: "15%"
+  },
+  {
+    question: "What is 18% of 320?",
+    options: ["56", "57.6", "58", "60"],
+    answer: "57.6"
+  },
+  {
+    question: "If 48 is 40% of a number, what is the number?",
+    options: ["100", "110", "120", "130"],
+    answer: "120"
+  },
+  {
+    question: "What percent of 180 is 45?",
+    options: ["20%", "25%", "30%", "35%"],
+    answer: "25%"
+  }
+];
+
+
+  let selectedQuestions = [];
+  let currentIndex = 0;
+  let score = 0;
+  let timerInterval;
+  let questionCount = 0;
+  let questionStartTime;
+  const questionStats = [];
+
+  function chooseCount(count) {
+    questionCount = count;
+    document.getElementById("start-section").classList.add("hidden");
+    document.getElementById("timer-section").classList.remove("hidden");
+  }
+
+  function startQuiz(minutes) {
+    document.getElementById("timer-section").classList.add("hidden");
+    document.getElementById("quiz-section").classList.remove("hidden");
+
+    selectedQuestions = shuffleArray([...allQuestions]).slice(0, questionCount);
+    startTimer(minutes * 60);
+    showQuestion();
+  }
+
+  function shuffleArray(arr) {
+    return arr.sort(() => Math.random() - 0.5);
+  }
+
+  function startTimer(seconds) {
+    const timerEl = document.getElementById("timer");
+    timerInterval = setInterval(() => {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      timerEl.textContent = `Timer: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      if (seconds === 0) {
+        clearInterval(timerInterval);
+        alert("Time's up!");
+        showResult();
+      }
+      seconds--;
+    }, 1000);
+  }
+
+  function showQuestion() {
+    questionStartTime = Date.now();
+    const currentQ = selectedQuestions[currentIndex];
+    document.getElementById("question").textContent = `Q${currentIndex + 1}: ${currentQ.question}`;
+    const optionsEl = document.getElementById("options");
+    optionsEl.innerHTML = "";
+
+    currentQ.options.forEach(opt => {
+      const label = document.createElement("label");
+      label.innerHTML = `<input type="radio" name="option" value="${opt}"> ${opt}`;
+      optionsEl.appendChild(label);
+    });
+  }
+
+  function nextQuestion() {
+    const selected = document.querySelector('input[name="option"]:checked');
+    if (!selected) {
+      alert("Please select an option!");
+      return;
+    }
+
+    const timeTaken = Math.floor((Date.now() - questionStartTime) / 1000);
+    const currentQ = selectedQuestions[currentIndex];
+    const userAnswer = selected.value;
+    const isCorrect = userAnswer === currentQ.answer;
+    if (isCorrect) score++;
+
+    questionStats.push({
+      question: currentQ.question,
+      userAnswer,
+      correctAnswer: currentQ.answer,
+      isCorrect,
+      timeTaken
+    });
+
+    currentIndex++;
+    if (currentIndex < selectedQuestions.length) {
+      showQuestion();
+    } else {
+      clearInterval(timerInterval);
+      showResult();
+    }
+  }
+
+  function showResult() {
+    document.getElementById("quiz-section").classList.add("hidden");
+    document.getElementById("result-section").classList.remove("hidden");
+    document.getElementById("score").textContent = `Your Score: ${score} out of ${selectedQuestions.length}`;
+
+    const tbody = document.getElementById("summary-table").querySelector("tbody");
+    tbody.innerHTML = "";
+    questionStats.forEach((q, index) => {
+      const row = `<tr>
+        <td>${index + 1}</td>
+        <td>${q.question}</td>
+        <td>${q.userAnswer}</td>
+        <td>${q.correctAnswer}</td>
+        <td style="color: ${q.isCorrect ? 'green' : 'red'}">${q.isCorrect ? 'Correct' : 'Wrong'}</td>
+        <td>${q.timeTaken}s</td>
+      </tr>`;
+      tbody.insertAdjacentHTML("beforeend", row);
+    });
+  }
+</script>
+
+</body>
+</html>
